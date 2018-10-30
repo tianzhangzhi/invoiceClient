@@ -27,12 +27,14 @@ LIBS += -LD:/work/CPFW/lib/ -lNLcpfw
 
 HEADERS += \
     NLcpfw.h \
-    NLcpfw_st.h
+    NLcpfw_st.h \
+    readthread.h
 
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    readthread.cpp
 
 HEADERS += \
         mainwindow.h

@@ -51,22 +51,22 @@ void ReadThread::run()
     {
         qDebug() << "open NG";
     }
-    int validLen;
-    len = 0;
     while(1)
     {
-        len = cpfw_read(hDev, btData, 4000, 100, TRUE);
+        len = cpfw_read(hDev, btData, 1, 5000, TRUE);
         if(len > 0)
         {
-            QThread::msleep(100);
+            qDebug() << "received" << len;
+            len += cpfw_read(hDev, &btData[len], 4000, 300, FALSE);
             len += cpfw_read(hDev, &btData[len], 4000, 100, FALSE);
-            QThread::msleep(100);
-            len += cpfw_read(hDev, &btData[len], 4000, 100, FALSE);
-            QThread::msleep(100);
-            len += cpfw_read(hDev, &btData[len], 4000, 100, FALSE);
+            len += cpfw_read(hDev, &btData[len], 4000, 60, FALSE);
+            len += cpfw_read(hDev, &btData[len], 4000, 20, FALSE);
+            len += cpfw_read(hDev, &btData[len], 4000, 10, FALSE);
+
+
 
             QString s = QString::fromUtf8((const char *)btData, len);
-            qDebug() << len << validLen;
+            qDebug() << len;
 
             // 获取创建前台窗口的线程
             DWORD dwThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);

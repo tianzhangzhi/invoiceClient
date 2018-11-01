@@ -2,38 +2,10 @@
 #include <QLibrary>
 #include "readthread.h"
 
-extern int len;
-extern unsigned char btData[];
+unsigned char btData[4000];
 
-/*
- *取得合法的UTF8的长度，防止汉字等双字节字符被截断
- */
-static int getValidLen(const unsigned char* buff, int len)
-{
-    int result = 0;
-    int increament;
-    while (true)
-    {
-        if(*buff < 128)
-            increament = 1;
-        else if(((*buff) & 0xf8) == 0xf0)
-            increament = 4;
-        else if(((*buff) & 0xf0) == 0xe0)
-            increament = 3;
-        else if(((*buff) & 0xe0) == 0xc0)
-            increament = 2;
-        else
-            return 0;
-        if(result + increament > len)
-            return result;
-        else
-        {
-            result += increament;
-            buff += increament;
-        }
-    }
-}
-//→
+
+extern HNLCPFW hDev;
 void ReadThread::run()
 {
     QLibrary mylib("user32.DLL");
@@ -46,14 +18,11 @@ void ReadThread::run()
         qDebug() << "load NG";
     }
 
-    HNLCPFW hDev = cpfw_open(L"hid", L"NULL", CPFW_OM_KEEP);
-    if(hDev == NULL)
-    {
-        qDebug() << "open NG";
-    }
+    int len;
     while(1)
     {
         len = cpfw_read(hDev, btData, 1, 5000, TRUE);
+        qDebug() << "received" << len;
         if(len > 0)
         {
             //qDebug() << "received" << len;
@@ -62,10 +31,6 @@ void ReadThread::run()
             len += cpfw_read(hDev, &btData[len], 4000, 60, FALSE);
             len += cpfw_read(hDev, &btData[len], 4000, 20, FALSE);
             len += cpfw_read(hDev, &btData[len], 4000, 10, FALSE);
-
-
-
-
 
             // 获取创建前台窗口的线程
             DWORD dwThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);

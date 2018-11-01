@@ -41,3 +41,6 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+
+RC_FILE += icon.rc
+

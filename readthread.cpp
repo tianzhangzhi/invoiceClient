@@ -44,16 +44,26 @@ void ReadThread::run()
     int len;
     while(1)
     {
-        len = cpfw_read(hDev, btData, 1, 5000, TRUE);
+        len = cpfw_read(hDev, btData, 100, 1000, FALSE);
         qDebug() << "received" << len;
         if(len > 0)
         {
             //qDebug() << "received" << len;
-            len += cpfw_read(hDev, &btData[len], 4000, 300, FALSE);
-            len += cpfw_read(hDev, &btData[len], 4000, 100, FALSE);
-            len += cpfw_read(hDev, &btData[len], 4000, 60, FALSE);
-            len += cpfw_read(hDev, &btData[len], 4000, 20, FALSE);
-            len += cpfw_read(hDev, &btData[len], 4000, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
+            len += cpfw_read(hDev, &btData[len], 100, 10, FALSE);
 
             // 获取创建前台窗口的线程
             DWORD dwThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);

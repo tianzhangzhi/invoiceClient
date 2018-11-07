@@ -18,14 +18,14 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     QImage *img = new QImage();
-    img->load("xt.png");
+    img->load("bg.jpg");
     QGraphicsScene *scene = new QGraphicsScene;
     scene->addPixmap(QPixmap::fromImage(*img));
     ui->graphicsView->setScene(scene);
     ui->graphicsView->show();
     setStatusBar(0);
     setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);
-    setFixedSize(300, 300);
+    setFixedSize(600, 600);
     setWindowIcon(QIcon("xt.png"));
     setWindowTitle("兴通开票");
 

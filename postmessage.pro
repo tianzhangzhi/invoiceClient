@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -28,13 +29,15 @@ LIBS += -LD:/work/CPFW/lib/ -lNLcpfw
 HEADERS += \
     NLcpfw.h \
     NLcpfw_st.h \
-    readthread.h
+    readthread.h \
+    tcpclient.h
 
 
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    readthread.cpp
+    readthread.cpp \
+    tcpclient.cpp
 
 HEADERS += \
         mainwindow.h

@@ -2,6 +2,7 @@
 #include <QLibrary>
 #include "readthread.h"
 
+
 unsigned char btData[4000];
 
 extern HNLCPFW hDev;

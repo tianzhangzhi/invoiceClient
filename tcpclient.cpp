@@ -10,6 +10,7 @@
 
 static char contentBuf[1024*1024];
 uint remain = 0;
+uint invoiceRemain = 0;
 uint size = 0;
 uint read = 0;
 static inline uint toInt(uchar *buf)
@@ -54,9 +55,13 @@ void TcpClient::readMsg()
 {
     qDebug() << "readmsg";
     char aChar;
+    QByteArray resp;
     if(remain > 0)
         goto readApp;
+    if(invoiceRemain > 0)
+        goto readInvoice;
     client->read(&aChar, 1);
+    qDebug() << "read respCode" << aChar;
     switch (aChar) {
     case VERSION:
         client->read(&aChar, 1);
@@ -83,7 +88,20 @@ readApp:
     }
         break;
     case INVOICE:
-
+        char sizeBuf[4];
+        client->read(sizeBuf, 4);
+        size = toInt((uchar *)sizeBuf);
+        qDebug() << "invoice Len" << size;
+        read = 0;
+        invoiceRemain = size;
+readInvoice:
+        read += client->read(&contentBuf[read], invoiceRemain);
+        invoiceRemain = size - read;
+        qDebug() << "invoice read" << read << remain;
+        if(invoiceRemain == 0) {
+            //qDebug() << "read invoice" << resp.length() << QString::fromUtf8(contentBuf, size);
+            emit wxInvoiceGetted(QByteArray(contentBuf, size));
+        }
         break;
     default:
         break;
@@ -102,4 +120,16 @@ bool TcpClient::hasNewVersion()
 void TcpClient::upDateVersion()
 {
     qDebug() << "updating";
+}
+
+void TcpClient::sendMsg(unsigned char *msg, uint len)
+{
+    uint write = client->write((const char*)msg, len);
+    qDebug() << "write " << write;
+}
+
+bool TcpClient::isTcpConnected()
+{
+    qDebug() << client->state();
+    return client->state() == QAbstractSocket::ConnectedState;
 }

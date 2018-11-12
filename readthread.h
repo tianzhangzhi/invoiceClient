@@ -12,6 +12,12 @@ class ReadThread : public QThread
 public:
     void run();
 
+public slots:
+    void outputWxInvoice(QByteArray);
+
+signals:
+    void wxInvoiceRead(unsigned char);
+
 };
 
 #endif // READTHREAD_H

@@ -1,5 +1,8 @@
 #include <QDebug>
 #include <QLibrary>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include "readthread.h"
 
 
@@ -13,6 +16,50 @@ static uint CP1251Table[64] = {
     0x00A0, 0x040E, 0x045E, 0x0408, 0x00A4, 0x0490, 0x00A6, 0x00A7, 0x0401, 0x00A9, 0x0404, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x0407,
     0x00B0, 0x00B1, 0x0406, 0x0456, 0x0491, 0x00B5, 0x00B6, 0x00B7, 0x0451, 0x2116, 0x0454, 0x00BB, 0x0458, 0x0405, 0x0455, 0x0457
 };
+
+static void outputString(QString s)
+{
+    // 获取创建前台窗口的线程
+    DWORD dwThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    // 将前台窗口线程贴附到当前线程
+    AttachThreadInput(dwThread, GetCurrentThreadId(), TRUE);
+    // 获取焦点窗口句柄
+    HWND hFocus = GetFocus();
+    for(int j = 0; j < s.length(); j++)
+    {
+        ushort value = s.at(j).unicode();
+        //QThread::msleep(10);
+        PostMessage(hFocus, WM_CHAR, value , 1);
+        //QThread::msleep(10);
+    }
+}
+
+static void outputTab()
+{
+    // 获取创建前台窗口的线程
+    DWORD dwThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    // 将前台窗口线程贴附到当前线程
+    AttachThreadInput(dwThread, GetCurrentThreadId(), TRUE);
+    // 获取焦点窗口句柄
+    HWND hFocus = GetFocus();
+    PostMessage(hFocus,WM_SYSKEYDOWN,VK_TAB,1);
+    QThread::msleep(100);
+    PostMessage(hFocus,WM_SYSKEYUP,VK_TAB,1);
+    QThread::msleep(100);
+}
+
+static bool isWxInvoice(unsigned char *buff)
+{
+    bool result = false;
+    const char* ident = "https://w.url.cn/s/";
+    unsigned char index = strlen(ident);
+    unsigned char tmp = buff[index];
+    buff[index] = 0;
+    if(strcmp(ident, (const char*)buff) == 0)
+        result = true;
+    buff[index] = tmp;
+    return result;
+}
 
 static QString fromCP1251(unsigned char *buff, int len)
 {
@@ -28,6 +75,30 @@ static QString fromCP1251(unsigned char *buff, int len)
             uniStr[i] = CP1251Table[buff[i] - 128];
     }
     return QString::fromUcs4(uniStr);
+}
+
+void ReadThread::outputWxInvoice(QByteArray content)
+{
+    //qDebug() << "content" << content;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(content);
+    if( jsonDocument.isNull() ){
+        qDebug()<< "===> QJsonDocument："<< content;
+    }
+
+    QJsonObject jsonObject = jsonDocument.object();
+
+    outputString(jsonObject.take("title").toString());
+    outputTab();
+
+    outputString(jsonObject.take("tax_no").toString());
+    outputTab();
+
+    outputString(jsonObject.take("addr").toString() + " "
+                 + jsonObject.take("phone").toString());
+    outputTab();
+
+    outputString(jsonObject.take("bank_type").toString() + " "
+                 + jsonObject.take("bank_no").toString());
 }
 
 void ReadThread::run()
@@ -75,6 +146,12 @@ void ReadThread::run()
             // 解除贴附
             //AttachThreadInput(dwThread, GetCurrentThreadId(), FALSE);
 
+            if(isWxInvoice(btData))
+            {
+                emit wxInvoiceRead((unsigned char)len);
+                continue;
+            }
+
             QString s;
             if(btData[0] == 0x5c && btData[1] == 0x30 && btData[2] == 0x30 && btData[3] == 0x30
                      && btData[4] == 0x30 && btData[5] == 0x32 && btData[6] == 0x32)
@@ -97,35 +174,20 @@ void ReadThread::run()
                 for(int i = 0; i < 4; i++)
                 {
                     s = list.at(i);
-                    for(int j = 0; j < s.length(); j++)
-                    {
-                        if(j == 0 || (j == 1 && i == 0))
-                            continue;
-                        value = s.at(j).unicode();
-                        //QThread::msleep(10);
-                        PostMessage(hFocus, WM_CHAR, value , 1);
-                        //QThread::msleep(10);
-                    }
+                    if(i == 0)
+                        s = s.right(s.length() - 2);
+                    else
+                        s = s.right(s.length() - 1);
+                    outputString(s);
                     if(i < 3)
                     {
-                        PostMessage(hFocus,WM_SYSKEYDOWN,VK_TAB,1);
-                        QThread::msleep(100);
-                        PostMessage(hFocus,WM_SYSKEYUP,VK_TAB,1);
-                        QThread::msleep(100);
-
-                        hFocus = GetFocus();
+                        outputTab();
                     }
                 }
             }
             else
             {
-                for(int i = 0; i < s.length(); i++)
-                {
-                    value = s.at(i).unicode();
-                    //QThread::msleep(10);
-                    PostMessage(hFocus, WM_CHAR, value , 1);
-                    //QThread::msleep(10);
-                }
+                outputString(s);
             }
         }
     }

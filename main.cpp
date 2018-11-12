@@ -9,10 +9,12 @@
 #include "synchapi.h"
 
 #include "readthread.h"
+#include "tcpthread.h"
 #include "tcpclient.h"
 
 QAction *action_quit;
 HNLCPFW hDev;
+extern TcpClient *tcpClient;
 
 static bool checkOne()
 {
@@ -46,9 +48,6 @@ int main(int argc, char *argv[])
         file.remove();
     }
 
-    TcpClient *tcpClient = new TcpClient();
-
-
     action_quit = new QAction(NULL);
     action_quit->setText(QString("Quit"));
     MainWindow w;
@@ -76,7 +75,11 @@ retry:
     }
 
     ReadThread *readThred = new ReadThread();
+    TcpThread *tcpTread = new TcpThread();
+    QObject::connect(readThred, SIGNAL(wxInvoiceRead(unsigned char)), tcpTread, SLOT(sendWxInvoice(unsigned char)));
+    QObject::connect(tcpClient, SIGNAL(wxInvoiceGetted(QByteArray)), readThred, SLOT(outputWxInvoice(QByteArray)));
     readThred->start();
+    tcpTread->start();
 
     return a.exec();
 }

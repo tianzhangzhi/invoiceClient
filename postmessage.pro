@@ -30,14 +30,16 @@ HEADERS += \
     NLcpfw.h \
     NLcpfw_st.h \
     readthread.h \
-    tcpclient.h
+    tcpclient.h \
+    tcpthread.h
 
 
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
     readthread.cpp \
-    tcpclient.cpp
+    tcpclient.cpp \
+    tcpthread.cpp
 
 HEADERS += \
         mainwindow.h
